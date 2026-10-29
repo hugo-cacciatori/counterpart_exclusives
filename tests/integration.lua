@@ -65,6 +65,11 @@ for _, p in ipairs(PROFILES) do
     local resZangoose = loader.hooks:call("encounter.species", function(e) return e end, encZangoose, ctxSwap)
     check(resZangoose.species == 336, p.version .. ": Zangoose swapped to Seviper")
 
+    -- 3b) Names, the shape Gen 3 encounters reach mods in (encounters.lua mod_encounter)
+    local resName = loader.hooks:call("encounter.species", function(e) return e end,
+      { species = "PSYDUCK", speciesId = 54, level = 20 }, ctxSwap)
+    check(resName.species == "SLOWPOKE", p.version .. ": PSYDUCK swapped to SLOWPOKE by name")
+
     -- 4) Non-exclusive species: Pidgey (16) -> stays Pidgey (16)
     local encPidgey = { species = 16, level = 3 }
     local resPidgey = loader.hooks:call("encounter.species", function(e) return e end, encPidgey, ctxSwap)
@@ -113,6 +118,28 @@ for _, p in ipairs(PROFILES) do
     check(distOut.VULPIX == 10, p.version .. ": VULPIX receives 10 weight")
     check(distOut.PIDGEY == 80, p.version .. ": PIDGEY weight unchanged at 80")
   end
+
+  -- Fishing raises encounter.fishing, never encounter.species (all generations).
+  -- Gen 1 passes (rod, mapId, candidates), Gen 2 adds a ctx, Gen 3 passes (rodId, mapId, pool);
+  -- Gen 3 hands mods species key names.
+  local fishIn = (p.gen == 3 and "SHELLDER") or "GROWLITHE"
+  local fishOut = (p.gen == 3 and "STARYU") or "VULPIX"
+  local fishArgs = { "SUPER_ROD", (p.gen == 3 and "FR_VERMILION_CITY") or "VERMILION_CITY", {} }
+  if p.gen == 2 then fishArgs[4] = { fishGroup = "FISHGROUP_SHORE" } end
+  local savedMath = love.math
+  for _, forced in ipairs({ 1, 0 }) do
+    love.math = { random = function() return forced end }
+    local res = loader.hooks:call("encounter.fishing", function() return { species = fishIn, level = 20 } end,
+      unpack(fishArgs, 1, 4))
+    love.math = savedMath
+    if forced == 1 then
+      check(res and res.species == fishOut and res.level == 20, p.version .. ": fished " .. fishIn .. " swapped to " .. fishOut)
+    else
+      check(res and res.species == fishIn, p.version .. ": fished " .. fishIn .. " kept when the roll says no")
+    end
+  end
+  local resNone = loader.hooks:call("encounter.fishing", function() return nil end, unpack(fishArgs, 1, 4))
+  check(resNone == nil, p.version .. ": no bite stays no bite")
 
   -- Rollback restores vanilla refusal
   loader:_rollback("counterpart_exclusives")

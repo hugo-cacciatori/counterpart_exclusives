@@ -11,7 +11,7 @@ This mod makes counterpart version-exclusive species available in all versions o
 - **Red & Blue (Gen 1):** Ekans/Sandshrew, Oddish/Bellsprout, Mankey/Meowth, Growlithe/Vulpix, Scyther/Pinsir, Electabuzz/Magmar.
 - **Gold & Silver (Gen 2):** Spinarak/Ledyba, Vulpix/Growlithe, Mankey/Meowth, Gligar/Delibird, Mantine/Skarmory, Teddiursa/Phanpy.
 
-The mod shares encounter probability between counterpart pairs on the exact routes and biomes where they naturally occur, preserving original level ranges, encounter rates, and story progression.
+The mod shares encounter probability between counterpart pairs on the exact routes and biomes where they naturally occur, preserving original level ranges, encounter rates, and story progression. It covers walking, surfing and fishing encounters; on Gen 3, Sweet Scent and Rock Smash encounters keep their original species.
 
 ## Installation
 1. Download `counterpart_exclusives-0.1.0.zip` from the releases page.

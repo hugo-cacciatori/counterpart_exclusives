@@ -73,6 +73,43 @@ if generation == 3 then
   local distOut = loader.hooks:call("encounter.table", function(d) return d end, distIn, {})
   assert(distOut[58] == 10 and distOut[37] == 10 and distOut[16] == 80, "distribution not split 50/50")
 
+  -- 5b) Real Super Rod rolls (FireRed): Vermilion City's pool holds Shellder and Psyduck.
+  if TEST_VERSION == "firered" then
+    local Encounters = require("src.core.game3.encounters")
+    Encounters.ensureLoaded()
+    local PAIRS = { SHELLDER = "STARYU", PSYDUCK = "SLOWPOKE", QWILFISH = "REMORAID" }
+    local rolled, final
+    local removeInner = loader.hooks:wrap("encounter.fishing", function(next)
+      local enc = next(); rolled = enc and enc.species; return enc
+    end, -100000, "installed_test")
+    local removeOuter = loader.hooks:wrap("encounter.fishing", function(next)
+      local enc = next(); final = enc and enc.species; return enc
+    end, 100000, "installed_test")
+    local function fish(forced)
+      love.math = { random = function() return forced end }
+      local swaps, bites = 0, 0
+      for _ = 1, 400 do
+        rolled, final = nil, nil
+        local enc = Encounters.rollFishing("FR_VERMILION_CITY", 2, {})
+        if enc then
+          bites = bites + 1
+          local want = (forced == 1 and PAIRS[rolled]) or rolled
+          assert(final == want, string.format("fishing: rolled %s, mods returned %s, want %s", tostring(rolled), tostring(final), tostring(want)))
+          local Pokemon = require("src.core.game3.pokemon")
+          assert(enc.species == Pokemon.speciesFromName(want), "engine encounter species differs from the swapped name")
+          if want ~= rolled then swaps = swaps + 1 end
+        end
+      end
+      love.math = nil
+      return swaps, bites
+    end
+    local swaps, bites = fish(1)
+    assert(bites > 0 and swaps > 0, string.format("no fishing swap in %d bites", bites))
+    local kept = fish(0)
+    assert(kept == 0, "fishing swapped although the roll said no")
+    removeInner(); removeOuter()
+  end
+
   -- 6) Rollback
   loader:_rollback("counterpart_exclusives")
   local resRollback = loader.hooks:call("encounter.species", function(e) return e end, enc1, { forceSwap = true })
