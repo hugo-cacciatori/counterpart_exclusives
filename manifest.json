@@ -4,8 +4,13 @@
   "version": "0.1.1",
   "api": 2,
   "entry": "main.lua",
-  "games": ["all"],
-  "permissions": ["engine_internals"],
+  "games": [
+    "all"
+  ],
+  "permissions": [
+    "engine_internals"
+  ],
   "description": "Makes counterpart version-exclusive wild Pokémon available in all games of each generation family.",
-  "author": "Hugo Cacciatori"
+  "author": "Hugo Cacciatori",
+  "github": "hugo-cacciatori/counterpart_exclusives"
 }
